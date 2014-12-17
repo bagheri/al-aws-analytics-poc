@@ -57,7 +57,7 @@ public class PacketProcessor {
             System.err.println("Usage: "
                                + PacketProcessor.class.getSimpleName()
                                + " <application name> <stream name>"
-                               + "<DynamoDB table name> <region>");
+                               + " <DynamoDB table name> <region>");
             System.exit(1);
         }
 
