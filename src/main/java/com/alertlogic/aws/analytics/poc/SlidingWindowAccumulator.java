@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.alertlogic.aws.kinesis.test1.kcl.counter;
+package com.alertlogic.aws.analytics.poc;
 
 import java.util.Map;
 

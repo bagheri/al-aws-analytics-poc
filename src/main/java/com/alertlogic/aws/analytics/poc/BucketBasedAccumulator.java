@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.alertlogic.aws.kinesis.test1.kcl.counter;
+package com.alertlogic.aws.analytics.poc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +24,7 @@ import java.util.Map;
  * Provides a way to count the occurrences of objects across a number of discrete "buckets". These buckets usually
  * represent a time period such as 1 second.
  */
-public class BucketBasedCounter<ObjectType> {
+public class BucketBasedAccumulator<ObjectType> {
     private Map<ObjectType, long[]> objectCounts;
     private int maxBuckets;
 
@@ -33,7 +33,7 @@ public class BucketBasedCounter<ObjectType> {
      * 
      * @param maxBuckets Total buckets this counter will use.
      */
-    public BucketBasedCounter(int maxBuckets) {
+    public BucketBasedAccumulator(int maxBuckets) {
         if (maxBuckets < 1) {
             throw new IllegalArgumentException("maxBuckets must be >= 1");
         }

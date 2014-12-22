@@ -41,7 +41,8 @@ import com.alertlogic.aws.analytics.poc.Clock;
 import com.alertlogic.aws.analytics.poc.NanoClock;
 import com.alertlogic.aws.analytics.poc.Timer;
 /**
- * Computes a map of records to accumulated values (counts) over a time period.
+ * Computes a map of (HttpReferrerPair -> count(pair)) over a fixed range of time. Counts are computed at the intervals
+ * provided.
  *
  * @param <T> The type of records this processor is capable of counting.
  */
@@ -185,20 +186,19 @@ public class RecordProcessor<T> implements IRecordProcessor {
     public void processRecords(List<Record> records, IRecordProcessorCheckpointer checkpointer) {
         for (Record r : records) {
             // Deserialize each record as an UTF-8 encoded JSON String of the type provided
-            T record;
+            T pair;
             try {
-                record = JSON.readValue(r.getData().array(), recordType);
+                pair = JSON.readValue(r.getData().array(), recordType);
             } catch (IOException e) {
-                LOG.warn("Skipping record. Unable to parse record into countable record. Partition Key: "
+                LOG.warn("Skipping record. Unable to parse record into HttpReferrerPair. Partition Key: "
                         + r.getPartitionKey() + ". Sequence Number: " + r.getSequenceNumber(),
                         e);
                 continue;
             }
-            // Increment the counter for the record.
-            // This is synchronized because there is another thread reading from
+            // Increment the counter for the new pair. This is synchronized because there is another thread reading from
             // the counter to compute running totals every interval.
             synchronized (counter) {
-                counter.increment(record);
+                counter.increment(pair);
             }
         }
 
@@ -229,8 +229,7 @@ public class RecordProcessor<T> implements IRecordProcessor {
         try {
             // Wait for at most 30 seconds for the executor service's tasks to complete
             if (!scheduledExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
-                LOG.warn("Failed to properly shut down thread pool for calculating counts and persisting them. "
-                         + "Some counts may have been lost.");
+                LOG.warn("Failed to properly shut down interval thread pool for calculating interval counts and persisting them. Some counts may not have been persisted.");
             } else {
                 // Only checkpoint if we successfully shut down the thread pool
                 // Important to checkpoint after reaching end of shard, so we can start processing data from child
@@ -245,7 +244,7 @@ public class RecordProcessor<T> implements IRecordProcessor {
             // We failed to shutdown cleanly, do not checkpoint.
             scheduledExecutor.shutdownNow();
             // Handle this similar to a host or process crashing and abort the JVM.
-            LOG.fatal("Couldn't save data within the max wait time. Aborting the JVM to mimic a crash.");
+            LOG.fatal("Couldn't successfully persist data within the max wait time. Aborting the JVM to mimic a crash.");
             System.exit(1);
         }
     }
@@ -286,8 +285,7 @@ public class RecordProcessor<T> implements IRecordProcessor {
                 }
             } catch (InvalidStateException e) {
                 // This indicates an issue with the DynamoDB table (check for table, provisioned IOPS).
-                LOG.error("Cannot save checkpoint to the DynamoDB table "
-                          + "used by the Amazon Kinesis Client Library.", e);
+                LOG.error("Cannot save checkpoint to the DynamoDB table used by the Amazon Kinesis Client Library.", e);
                 break;
             } catch (InterruptedException e) {
                 LOG.error("Error encountered while checkpointing count persister.", e);

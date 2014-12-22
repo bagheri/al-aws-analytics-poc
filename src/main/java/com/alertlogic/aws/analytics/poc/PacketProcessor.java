@@ -3,7 +3,7 @@
  *
  */
 
-package com.alertlogic.aws.kinesis.test1;
+package com.alertlogic.aws.analytics.poc;
 
 import java.net.UnknownHostException;
 import java.util.UUID;
@@ -25,16 +25,16 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionIn
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 
-import com.alertlogic.aws.kinesis.test1.kcl.CountingRecordProcessorFactory;
-import com.alertlogic.aws.kinesis.test1.kcl.persistence.CountPersister;
-import com.alertlogic.aws.kinesis.test1.kcl.persistence.ddb.DynamoDBCountPersister;
-import com.alertlogic.aws.kinesis.test1.model.HttpReferrerPair;
-import com.alertlogic.aws.kinesis.test1.utils.DynamoDBUtils;
-import com.alertlogic.aws.kinesis.test1.utils.SampleUtils;
-import com.alertlogic.aws.kinesis.test1.utils.StreamUtils;
+import com.alertlogic.aws.analytics.poc.CountingRecordProcessorFactory;
+import com.alertlogic.aws.analytics.poc.CountPersister;
+import com.alertlogic.aws.analytics.poc.DynamoDBCountPersister;
+import com.alertlogic.aws.analytics.poc.HttpReferrerPair;
+import com.alertlogic.aws.analytics.poc.DynamoDBUtils;
+import com.alertlogic.aws.analytics.poc.SampleUtils;
+import com.alertlogic.aws.analytics.poc.StreamUtils;
 
 /**
- * Amazon Kinesis stream-processing application to test data modeling.
+ * Amazon Kinesis stream-processing application to test analytics.
  */
 public class PacketProcessor {
     private static final Log LOG = LogFactory.getLog(PacketProcessor.class);
@@ -49,7 +49,7 @@ public class PacketProcessor {
      * 
      * @param args Application name to use for the Kinesis Client Application,
      *             Stream name to read from,
-     *             DynamoDB table name to persist counts into,
+     *             DynamoDB table name to write accumulated data into,
      *             and the AWS region for resources.
      */
     public static void main(String[] args) throws UnknownHostException {
