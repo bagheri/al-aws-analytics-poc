@@ -30,12 +30,12 @@ import com.amazonaws.services.kinesis.AmazonKinesisClient;
 /**
  * Delete all resources used by the sample application.
  */
-public class DeleteSampleResources {
-    private static final Log LOG = LogFactory.getLog(DeleteSampleResources.class);
+public class DeleteResources {
+    private static final Log LOG = LogFactory.getLog(DeleteResources.class);
 
     public static void main(String[] args) {
         if (args.length != 4) {
-            System.err.println("Usage: " + DeleteSampleResources.class.getSimpleName()
+            System.err.println("Usage: " + DeleteResources.class.getSimpleName()
                     + " <application name> <stream name> <DynamoDB table name> <region>");
             System.exit(1);
         }
@@ -43,10 +43,10 @@ public class DeleteSampleResources {
         String applicationName = args[0];
         String streamName = args[1];
         String countsTableName = args[2];
-        Region region = SampleUtils.parseRegion(args[3]);
+        Region region = Utils.parseRegion(args[3]);
 
         AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
-        ClientConfiguration clientConfig = SampleUtils.configureUserAgentForSample(new ClientConfiguration());
+        ClientConfiguration clientConfig = Utils.configureUserAgentForSample(new ClientConfiguration());
         AmazonKinesis kinesis = new AmazonKinesisClient(credentialsProvider, clientConfig);
         kinesis.setRegion(region);
         AmazonDynamoDB dynamoDB = new AmazonDynamoDBClient(credentialsProvider, clientConfig);

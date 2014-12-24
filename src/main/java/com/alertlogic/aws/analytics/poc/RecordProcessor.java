@@ -41,7 +41,7 @@ import com.alertlogic.aws.analytics.poc.Clock;
 import com.alertlogic.aws.analytics.poc.NanoClock;
 import com.alertlogic.aws.analytics.poc.Timer;
 /**
- * Computes a map of (HttpReferrerPair -> count(pair)) over a fixed range of time. Counts are computed at the intervals
+ * Computes a map of (Record -> count(record)) over a fixed range of time. Counts are computed at the intervals
  * provided.
  *
  * @param <T> The type of records this processor is capable of counting.
@@ -186,19 +186,19 @@ public class RecordProcessor<T> implements IRecordProcessor {
     public void processRecords(List<Record> records, IRecordProcessorCheckpointer checkpointer) {
         for (Record r : records) {
             // Deserialize each record as an UTF-8 encoded JSON String of the type provided
-            T pair;
+            T record;
             try {
-                pair = JSON.readValue(r.getData().array(), recordType);
+                record = JSON.readValue(r.getData().array(), recordType);
             } catch (IOException e) {
-                LOG.warn("Skipping record. Unable to parse record into HttpReferrerPair. Partition Key: "
+                LOG.warn("Skipping record. Unable to parse record into Record. Partition Key: "
                         + r.getPartitionKey() + ". Sequence Number: " + r.getSequenceNumber(),
                         e);
                 continue;
             }
-            // Increment the counter for the new pair. This is synchronized because there is another thread reading from
+            // Increment the counter for the new record. This is synchronized because there is another thread reading from
             // the counter to compute running totals every interval.
             synchronized (counter) {
-                counter.increment(pair);
+                counter.increment(record);
             }
         }
 

@@ -28,7 +28,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import com.alertlogic.aws.analytics.poc.CountingRecordProcessorFactory;
 import com.alertlogic.aws.analytics.poc.CountPersister;
 import com.alertlogic.aws.analytics.poc.DynamoDBCountPersister;
-import com.alertlogic.aws.analytics.poc.HttpReferrerPair;
+import com.alertlogic.aws.analytics.poc.Record;
 import com.alertlogic.aws.analytics.poc.DynamoDBUtils;
 import com.alertlogic.aws.analytics.poc.SampleUtils;
 import com.alertlogic.aws.analytics.poc.StreamUtils;
@@ -39,7 +39,7 @@ import com.alertlogic.aws.analytics.poc.StreamUtils;
 public class PacketProcessor {
     private static final Log LOG = LogFactory.getLog(PacketProcessor.class);
 
-    // Count occurrences of HTTP referrer pairs over a range of 10 seconds
+    // Count occurrences of records over a range of 10 seconds
     private static final int COMPUTE_RANGE_FOR_COUNTS_IN_MILLIS = 10000;
     // Update the counts every 1 second
     private static final int COMPUTE_INTERVAL_IN_MILLIS = 1000;
@@ -104,8 +104,8 @@ public class PacketProcessor {
                         dynamoDBUtils.createMapperForTable(countsTableName));
 
         IRecordProcessorFactory recordProcessor =
-                new CountingRecordProcessorFactory<HttpReferrerPair>(
-                        HttpReferrerPair.class,
+                new CountingRecordProcessorFactory<Record>(
+                        Record.class,
                         persister,
                         COMPUTE_RANGE_FOR_COUNTS_IN_MILLIS,
                         COMPUTE_INTERVAL_IN_MILLIS);

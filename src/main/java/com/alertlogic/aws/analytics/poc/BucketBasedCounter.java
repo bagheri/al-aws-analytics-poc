@@ -24,7 +24,7 @@ import java.util.Map;
  * Provides a way to count the occurrences of objects across a number of discrete "buckets". These buckets usually
  * represent a time period such as 1 second.
  */
-public class BucketBasedAccumulator<ObjectType> {
+public class BucketBasedCounter<ObjectType> {
     private Map<ObjectType, long[]> objectCounts;
     private int maxBuckets;
 
@@ -33,7 +33,7 @@ public class BucketBasedAccumulator<ObjectType> {
      * 
      * @param maxBuckets Total buckets this counter will use.
      */
-    public BucketBasedAccumulator(int maxBuckets) {
+    public BucketBasedCounter(int maxBuckets) {
         if (maxBuckets < 1) {
             throw new IllegalArgumentException("maxBuckets must be >= 1");
         }

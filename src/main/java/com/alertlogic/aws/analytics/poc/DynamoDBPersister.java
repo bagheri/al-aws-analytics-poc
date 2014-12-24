@@ -34,16 +34,18 @@ import org.apache.commons.logging.LogFactory;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch;
-import com.alertlogic.aws.kinesis.test1.kcl.persistence.Persister;
-import com.alertlogic.aws.kinesis.test1.model.HttpReferrerPair;
-import com.alertlogic.aws.kinesis.test1.model.HttpReferrerPairsCount;
-import com.alertlogic.aws.kinesis.test1.model.ReferrerCount;
+
+import com.alertlogic.aws.analytics.poc.Persister;
+import com.alertlogic.aws.analytics.poc.Record;
+import com.alertlogic.aws.analytics.poc.RecordCount;
+import com.alertlogic.aws.analytics.poc.FieldCount;
 
 /**
- * Persists counts to DynamoDB. This uses a separate thread to send counts to DynamoDB to decouple any network latency
+ * Persists counts to DynamoDB.
+ * This uses a separate thread to send counts to DynamoDB to decouple any network latency
  * from affecting the thread we use to update counts.
  */
-public class DynamoDBPersister implements Persister<HttpReferrerPair> {
+public class DynamoDBPersister implements Persister<Record> {
     private static final Log LOG = LogFactory.getLog(DynamoDBPersister.class);
 
     // Generate UTC timestamps
@@ -52,15 +54,17 @@ public class DynamoDBPersister implements Persister<HttpReferrerPair> {
     private DynamoDBMapper mapper;
 
     /**
-     * This is used to limit the in memory queue. This number is the total counts we could generate for 10 unique
+     * This is used to limit the in memory queue.
+     * This number is the total counts we could generate for 10 unique
      * resources in 10 minutes if our update interval is 100ms.
      *
      * 10 resources * 10 minutes * 60 seconds * 10 intervals per second = 60,000.
      */
     private static final int MAX_COUNTS_IN_MEMORY = 60000;
 
-    // The queue holds all pending referrer pair counts to be sent to DynamoDB.
-    private BlockingQueue<HttpReferrerPairsCount> counts = new LinkedBlockingQueue<>(MAX_COUNTS_IN_MEMORY);
+    // The queue holds all pending counts to be sent to DynamoDB.
+    private BlockingQueue<RecordCount> counts =
+                new LinkedBlockingQueue<>(MAX_COUNTS_IN_MEMORY);
 
     // The thread to use for sending counts to DynamoDB.
     private Thread dynamoDBSender;
@@ -93,7 +97,7 @@ public class DynamoDBPersister implements Persister<HttpReferrerPair> {
             @Override
             public void run() {
                 // Create a reusable buffer to drain our queue into.
-                List<HttpReferrerPairsCount> buffer = new ArrayList<>(MAX_COUNTS_IN_MEMORY);
+                List<RecordCount> buffer = new ArrayList<>(MAX_COUNTS_IN_MEMORY);
 
                 // Continuously attempt to drain the queue and send counts to DynamoDB until this thread is interrupted
                 while (!Thread.currentThread().isInterrupted()) {
@@ -123,7 +127,7 @@ public class DynamoDBPersister implements Persister<HttpReferrerPair> {
     }
 
     @Override
-    public void persist(Map<HttpReferrerPair, Long> objectCounts) {
+    public void persist(Map<Record, Long> objectCounts) {
         if (objectCounts.isEmpty()) {
             // short circuit to avoid creating a map when we have no objects to persist
             return;
@@ -132,37 +136,37 @@ public class DynamoDBPersister implements Persister<HttpReferrerPair> {
         // Use a local collection to batch writing the new counts into the queue. This will allow the queue drainer
         // to remain simple as it doesn't have to account for less than full batches.
 
-        // We map resource to pair counts so we can easily look up a resource and add referrer counts to it
-        Map<String, HttpReferrerPairsCount> countMap = new HashMap<>();
+        // We map resource to counts so we can easily look up a resource and add counts to it
+        Map<String, RecordCount> countMap = new HashMap<>();
 
-        for (Map.Entry<HttpReferrerPair, Long> count : objectCounts.entrySet()) {
+        for (Map.Entry<Record, Long> count : objectCounts.entrySet()) {
             // Check for an existing counts for this resource
-            HttpReferrerPair pair = count.getKey();
-            HttpReferrerPairsCount pairCount = countMap.get(pair.getResource());
-            if (pairCount == null) {
-                // Create a new pair if this resource hasn't been seen yet in this batch
-                pairCount = new HttpReferrerPairsCount();
-                pairCount.setResource(pair.getResource());
-                pairCount.setTimestamp(Calendar.getInstance(UTC).getTime());
-                pairCount.setReferrerCounts(new ArrayList<ReferrerCount>());
-                pairCount.setHost(hostname);
-                countMap.put(pair.getResource(), pairCount);
+            Record record = count.getKey();
+            RecordCount recordCount = countMap.get(record.getResource());
+            if (recordCount == null) {
+                // Create a new record if this resource hasn't been seen yet in this batch
+                recordCount = new RecordCount();
+                recordCount.setResource(record.getResource());
+                recordCount.setTimestamp(Calendar.getInstance(UTC).getTime());
+                recordCount.setFieldCounts(new ArrayList<FieldCount>());
+                recordCount.setHost(hostname);
+                countMap.put(record.getResource(), recordCount);
             }
 
-            // Add referrer to list of refcounts for this resource and time
-            ReferrerCount refCount = new ReferrerCount();
-            refCount.setReferrer(pair.getReferrer());
+            // Add count to list of counts for this resource and time
+            FieldCount refCount = new FieldCount();
+            refCount.setField(record.getField());
             refCount.setCount(count.getValue());
-            pairCount.getReferrerCounts().add(refCount);
+            recordCount.getFieldCounts().add(refCount);
         }
 
         // Top N calculation for this interval
-        // By sorting the referrer counts list in descending order the consumer of the count data can choose their own
+        // By sorting the counts list in descending order the consumer of the count data can choose their own
         // N.
-        for (HttpReferrerPairsCount count : countMap.values()) {
-            Collections.sort(count.getReferrerCounts(), new Comparator<ReferrerCount>() {
+        for (RecordCount count : countMap.values()) {
+            Collections.sort(count.getFieldCounts(), new Comparator<FieldCount>() {
                 @Override
-                public int compare(ReferrerCount c1, ReferrerCount c2) {
+                public int compare(FieldCount c1, FieldCount c2) {
                     if (c2.getCount() > c1.getCount()) {
                         return 1;
                     } else if (c1.getCount() == c2.getCount()) {
@@ -203,7 +207,7 @@ public class DynamoDBPersister implements Persister<HttpReferrerPair> {
      *        an optimization to avoid allocating a new buffer every interval.
      * @throws InterruptedException Thread interrupted while waiting for new data to arrive in the queue.
      */
-    protected void sendQueueToDynamoDB(List<HttpReferrerPairsCount> buffer) throws InterruptedException {
+    protected void sendQueueToDynamoDB(List<RecordCount> buffer) throws InterruptedException {
         // Block while waiting for data
         buffer.add(counts.take());
         // Drain as much of the queue as we can.

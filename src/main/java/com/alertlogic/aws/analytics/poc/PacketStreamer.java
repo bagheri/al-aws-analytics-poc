@@ -70,27 +70,27 @@ public class PacketStreamer {
         List<String> resources = new ArrayList<>();
         resources.add("/index.html");
 
-        // These are the possible referrers to use when generating pairs
-        List<String> referrers = new ArrayList<>();
-        referrers.add("http://www.amazon.com");
-        referrers.add("http://www.google.com");
-        referrers.add("http://www.yahoo.com");
-        referrers.add("http://www.bing.com");
-        referrers.add("http://www.stackoverflow.com");
-        referrers.add("http://www.reddit.com");
+        // These are the possible fields to use when generating records
+        List<String> fields = new ArrayList<>();
+        fields.add("http://www.amazon.com");
+        fields.add("http://www.google.com");
+        fields.add("http://www.yahoo.com");
+        fields.add("http://www.bing.com");
+        fields.add("http://www.stackoverflow.com");
+        fields.add("http://www.reddit.com");
 
-        HttpReferrerPairFactory pairFactory = new HttpReferrerPairFactory(resources, referrers);
+        RecordFactory recordFactory = new RecordFactory(resources, fields);
 
         // Creates a stream to write to with 2 shards if it doesn't exist
         StreamUtils streamUtils = new StreamUtils(kinesis);
         streamUtils.createStreamIfNotExists(streamName, 2);
         LOG.info(String.format("%s stream is ready for use", streamName));
 
-        final HttpReferrerKinesisPutter putter = new HttpReferrerKinesisPutter(pairFactory, kinesis, streamName);
+        final RecordKinesisPutter putter = new RecordKinesisPutter(recordFactory, kinesis, streamName);
 
         ExecutorService es = Executors.newCachedThreadPool();
 
-        Runnable pairSender = new Runnable() {
+        Runnable recordSender = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -103,10 +103,10 @@ public class PacketStreamer {
         };
 
         for (int i = 0; i < numberOfThreads; i++) {
-            es.submit(pairSender);
+            es.submit(recordSender);
         }
 
-        LOG.info(String.format("Sending pairs with a %dms delay between records with %d thread(s).",
+        LOG.info(String.format("Sending records with a %dms delay between records with %d thread(s).",
                 DELAY_BETWEEN_RECORDS_IN_MILLIS,
                 numberOfThreads));
 

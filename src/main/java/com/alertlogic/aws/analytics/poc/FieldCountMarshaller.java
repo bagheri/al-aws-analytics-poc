@@ -17,10 +17,10 @@ package com.alertlogic.aws.kinesis.test1.kcl.persistence.ddb;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.JsonMarshaller;
-import com.alertlogic.aws.kinesis.test1.model.ReferrerCount;
+import com.alertlogic.aws.analytics.poc;
 
 /**
- * Marshall {@link ReferrerCount}s as JSON strings when using the {@link DynamoDBMapper}.
+ * Marshall {@link FieldCount}s as JSON strings when using the {@link DynamoDBMapper}.
  */
-public class ReferrerCountMarshaller extends JsonMarshaller<ReferrerCount> {
+public class FieldCountMarshaller extends JsonMarshaller<FieldCount> {
 }
