@@ -15,6 +15,11 @@
         </url>
     </scm>
 
+    <properties>
+        <amazon-kinesis-client.version>1.1.0</amazon-kinesis-client.version>
+        <jetty.version>8.1.9.v20130131</jetty.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
