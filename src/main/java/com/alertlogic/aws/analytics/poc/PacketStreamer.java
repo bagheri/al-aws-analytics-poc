@@ -54,13 +54,13 @@ public class PacketStreamer {
 
         int numberOfThreads = Integer.parseInt(args[0]);
         String streamName = args[1];
-        Region region = SampleUtils.parseRegion(args[2]);
+        Region region = Utils.parseRegion(args[2]);
 
         AWSCredentialsProvider credentialsProvider =
             new DefaultAWSCredentialsProviderChain();
 
         ClientConfiguration clientConfig =
-            SampleUtils.configureUserAgentForSample(new ClientConfiguration());
+            Utils.configureUserAgentForSample(new ClientConfiguration());
 
         AmazonKinesis kinesis =
             new AmazonKinesisClient(credentialsProvider, clientConfig);
@@ -94,7 +94,7 @@ public class PacketStreamer {
             @Override
             public void run() {
                 try {
-                    putter.sendPairsIndefinitely(DELAY_BETWEEN_RECORDS_IN_MILLIS, TimeUnit.MILLISECONDS);
+                    putter.sendRecordsIndefinitely(DELAY_BETWEEN_RECORDS_IN_MILLIS, TimeUnit.MILLISECONDS);
                 } catch (Exception ex) {
                     LOG.warn("Thread encountered an error while sending records. Records will no longer be put by this thread.",
                             ex);

@@ -13,11 +13,11 @@
  * permissions and limitations under the License.
  */
 
-package com.alertlogic.aws.kinesis.test1.kcl.persistence.ddb;
+package com.alertlogic.aws.analytics.poc;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.JsonMarshaller;
-import com.alertlogic.aws.analytics.poc;
+import com.alertlogic.aws.analytics.poc.FieldCount;
 
 /**
  * Marshall {@link FieldCount}s as JSON strings when using the {@link DynamoDBMapper}.

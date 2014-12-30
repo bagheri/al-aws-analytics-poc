@@ -13,12 +13,12 @@
  * permissions and limitations under the License.
  */
 
-package com.alertlogic.aws.kinesis.test1.producer;
+package com.alertlogic.aws.analytics.poc;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.alertlogic.aws.kinesis.test1.model.Record;
+import com.alertlogic.aws.analytics.poc.Record;
 
 /**
  * Generates random {@link Record}s based on an internal sample set. This class is thread safe.
@@ -52,9 +52,9 @@ public class RecordFactory {
      */
     public Record create() {
         String resource = getRandomResource();
-        String record = getRandomField();
+        String field = getRandomField();
 
-        Record record = new Record(resource, record);
+        Record record = new Record(resource, field);
 
         return record;
     }

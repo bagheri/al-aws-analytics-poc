@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.alertlogic.aws.analytics.poc.SlidingWindowCounter;
-import com.alertlogic.aws.analytics.poc.CountPersister;
+import com.alertlogic.aws.analytics.poc.Persister;
 import com.alertlogic.aws.analytics.poc.Clock;
 import com.alertlogic.aws.analytics.poc.NanoClock;
 import com.alertlogic.aws.analytics.poc.Timer;
@@ -72,7 +72,7 @@ public class RecordProcessor<T> implements IRecordProcessor {
     private ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
 
     // This is responsible for persisting our counts every interval
-    private CountPersister<T> persister;
+    private Persister<T> persister;
 
     private RecordProcessorConfig config;
 
@@ -90,7 +90,7 @@ public class RecordProcessor<T> implements IRecordProcessor {
      */
     public RecordProcessor(RecordProcessorConfig config,
             Class<T> recordType,
-            CountPersister<T> persister,
+            Persister<T> persister,
             int computeRangeInMillis,
             int computeIntervalInMillis) {
         if (config == null) {

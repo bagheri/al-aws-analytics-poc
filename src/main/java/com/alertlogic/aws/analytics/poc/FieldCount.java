@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.alertlogic.aws.kinesis.test1.model;
+package com.alertlogic.aws.analytics.poc;
 
 /**
  * A field-value and its count.

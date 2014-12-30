@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.alertlogic.aws.kinesis.test1.model;
+package com.alertlogic.aws.analytics.poc;
 
 /**
  * Standin for a general record.
@@ -42,8 +42,8 @@ public class Record {
     public void setField(String name, String value) {
         switch (name)
         {
-            case "resource": return this.resource = value;
-            case "referrer": return this.referrer = referrer;
+            case "resource": this.resource = value;
+            case "referrer": this.referrer = referrer;
         }
     }
 

@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.alertlogic.aws.kinesis.test1.model;
+package com.alertlogic.aws.analytics.poc;
 
 import java.util.Date;
 import java.util.List;
@@ -23,7 +23,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMarshalling;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.alertlogic.aws.kinesis.test1.kcl.persistence.ddb.FieldCountMarshaller;
+import com.alertlogic.aws.analytics.poc.FieldCountMarshaller;
 
 /**
  * A record and the number of occurrences of a field by resource over a given period of time.

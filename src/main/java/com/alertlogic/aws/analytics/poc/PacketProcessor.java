@@ -25,12 +25,12 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionIn
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 
-import com.alertlogic.aws.analytics.poc.CountingRecordProcessorFactory;
-import com.alertlogic.aws.analytics.poc.CountPersister;
-import com.alertlogic.aws.analytics.poc.DynamoDBCountPersister;
+import com.alertlogic.aws.analytics.poc.RecordProcessorFactory;
+import com.alertlogic.aws.analytics.poc.Persister;
+import com.alertlogic.aws.analytics.poc.DynamoDBPersister;
 import com.alertlogic.aws.analytics.poc.Record;
 import com.alertlogic.aws.analytics.poc.DynamoDBUtils;
-import com.alertlogic.aws.analytics.poc.SampleUtils;
+import com.alertlogic.aws.analytics.poc.Utils;
 import com.alertlogic.aws.analytics.poc.StreamUtils;
 
 /**
@@ -64,12 +64,12 @@ public class PacketProcessor {
         String applicationName = args[0];
         String streamName = args[1];
         String countsTableName = args[2];
-        Region region = SampleUtils.parseRegion(args[3]);
+        Region region = Utils.parseRegion(args[3]);
 
         AWSCredentialsProvider credentialsProvider =
             new DefaultAWSCredentialsProviderChain();
         ClientConfiguration clientConfig =
-            SampleUtils.configureUserAgentForSample(new ClientConfiguration());
+            Utils.configureUserAgentForSample(new ClientConfiguration());
         AmazonKinesis kinesis =
             new AmazonKinesisClient(credentialsProvider, clientConfig);
         kinesis.setRegion(region);
@@ -99,12 +99,12 @@ public class PacketProcessor {
         kclConfig.withInitialPositionInStream(InitialPositionInStream.LATEST);
 
         // Persist counts to DynamoDB
-        DynamoDBCountPersister persister =
-                new DynamoDBCountPersister(
+        DynamoDBPersister persister =
+                new DynamoDBPersister(
                         dynamoDBUtils.createMapperForTable(countsTableName));
 
         IRecordProcessorFactory recordProcessor =
-                new CountingRecordProcessorFactory<Record>(
+                new RecordProcessorFactory<Record>(
                         Record.class,
                         persister,
                         COMPUTE_RANGE_FOR_COUNTS_IN_MILLIS,

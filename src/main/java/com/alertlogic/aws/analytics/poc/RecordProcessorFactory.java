@@ -18,7 +18,7 @@ package com.alertlogic.aws.analytics.poc;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
 
-import com.alertlogic.aws.analytics.poc.CountPersister;
+import com.alertlogic.aws.analytics.poc.Persister;
 
 /**
  * Generates {@link RecordProcessor}s for counting occurrences of unique values over a given range.
@@ -28,7 +28,7 @@ import com.alertlogic.aws.analytics.poc.CountPersister;
 public class RecordProcessorFactory<T> implements IRecordProcessorFactory {
 
     private Class<T> recordType;
-    private CountPersister<T> persister;
+    private Persister<T> persister;
     private int computeRangeInMillis;
     private int computeIntervalInMillis;
     private RecordProcessorConfig config;
@@ -37,10 +37,10 @@ public class RecordProcessorFactory<T> implements IRecordProcessorFactory {
      * Creates a new factory that uses the default configuration values for each
      * processor it creates.
      *
-     * @see #RecordProcessorFactory(Class, CountPersister, int, int, RecordProcessorConfig)
+     * @see #RecordProcessorFactory(Class, Persister, int, int, RecordProcessorConfig)
      */
     public RecordProcessorFactory(Class<T> recordType,
-            CountPersister<T> persister,
+            Persister<T> persister,
             int computeRangeInMillis,
             int computeIntervalInMillis) {
         this(recordType, persister, computeRangeInMillis, computeIntervalInMillis, new RecordProcessorConfig());
@@ -61,7 +61,7 @@ public class RecordProcessorFactory<T> implements IRecordProcessorFactory {
      *         computeRangeInMillis is not evenly divisible by computeIntervalInMillis.
      */
     public RecordProcessorFactory(Class<T> recordType,
-            CountPersister<T> persister,
+            Persister<T> persister,
             int computeRangeInMillis,
             int computeIntervalInMillis,
             RecordProcessorConfig config) {

@@ -142,20 +142,20 @@ public class DynamoDBPersister implements Persister<Record> {
         for (Map.Entry<Record, Long> count : objectCounts.entrySet()) {
             // Check for an existing counts for this resource
             Record record = count.getKey();
-            RecordCount recordCount = countMap.get(record.getResource());
+            RecordCount recordCount = countMap.get(record.getField("resource"));
             if (recordCount == null) {
                 // Create a new record if this resource hasn't been seen yet in this batch
                 recordCount = new RecordCount();
-                recordCount.setResource(record.getResource());
+                recordCount.setResource(record.getField("resource"));
                 recordCount.setTimestamp(Calendar.getInstance(UTC).getTime());
                 recordCount.setFieldCounts(new ArrayList<FieldCount>());
                 recordCount.setHost(hostname);
-                countMap.put(record.getResource(), recordCount);
+                countMap.put(record.getField("resource"), recordCount);
             }
 
             // Add count to list of counts for this resource and time
             FieldCount refCount = new FieldCount();
-            refCount.setField(record.getField());
+            refCount.setField(record.getField("referrer"));
             refCount.setCount(count.getValue());
             recordCount.getFieldCounts().add(refCount);
         }
